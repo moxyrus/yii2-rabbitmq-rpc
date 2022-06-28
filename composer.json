@@ -1,5 +1,5 @@
 {
-  "name": "moxy/yii2-rabbitmq-rpc",
+  "name": "moxyrus/yii2-rabbitmq-rpc",
   "type": "yii2-extension",
   "description": "Yii2 rpc client and server classes",
   "minimum-stability": "dev",
