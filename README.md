@@ -42,18 +42,16 @@ use yii\console\Controller;
 class RpcController extends Controller
 {
 
-    public function actionRabbitServer()
+       public function actionRabbitServer()
     {
         /** @var RabbitComponent $rpc */
         $rpc = \Yii::$app->rpc;
 
-        $rpcServer = $rpc->initServer('exchange-name');
+        $rpcServer = $rpc->initServer('gis-search');
 
-        $callback = function($msg){
-            $result = "msg from client: " . print_r($msg, true);
-            echo $result."\n";
-            sleep(1);
-            return $result;
+        $callback = function ($obj) {
+            sleep($obj->sleep);
+            return $obj->bar();
         };
 
         $rpcServer->setCallback($callback);
@@ -62,40 +60,25 @@ class RpcController extends Controller
 
     public function actionRabbitClient()
     {
+
+        $ema = new Ema;
+        $ema->sleep = 3;
+
+        $ema2 = new Ema;
+        $ema2->sleep = 2;
+
         /** @var RabbitComponent $rpc */
         $rpc = \Yii::$app->rpc;
 
         // init a client
-        $rpcClient = $rpc->initClient('exchange-name');
-
-        // send a messages to exchange
-        for ($i = 0; $i < 5; $i++) {
-            $rpcClient->addRequest("message number {$i}, getReplies() test");
-        }
-
-        // get all responses from rpc server
-        print_r($rpcClient->getReplies());
-
-        for ($i = 0; $i < 5; $i++) {
-            $rpcClient->addRequest("message number {$i}, getReplies() with callback");
-        }
+        $rpcClient = $rpc->initClient('gis-search');
+        $rpcClient->addRequest($ema);
+        $rpcClient->addRequest($ema2);
 
         // use callback for responses
-        $rpcClient->getReplies(function($msg) {
-            echo "server reply callback... response is {$msg}\n";
-        });
+        $msg = $rpcClient->getReplies();
 
-        for ($i = 0; $i < 5; $i++) {
-            $rpcClient->addRequest("message number {$i}, waitExecution() test");
-        }
-
-        // wait messages execution without getting any response
-        $rpcClient->waitExecution();
-
-        // any message object will be serialized
-        $message = new \stdClass();
-        $message->some_property = 2;
-        $rpcClient->addRequest($message);
+        print_r($msg);
     }
 }
 ```
