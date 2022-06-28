@@ -105,6 +105,7 @@ class RpcClient extends BaseAmqp
     {
         $this->consume([$this, 'processMessage'], $callback);
         $this->waitReply();
+        $this->channel->close();
         return $this->repliesData;
     }
 
@@ -179,7 +180,7 @@ class RpcClient extends BaseAmqp
      */
     protected function waitReply()
     {
-        while ($this->repliesCount < $this->requestsCount)
+        while ($this->repliesCount <= 0)
         {
             $this->channel->wait(null, null, $this->requestTimeout);
         }
